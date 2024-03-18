@@ -50,6 +50,8 @@ public class TFStream
     public TFStream Parent { get; private set; }
     public IEnumerable<TFStream> Children => m_Children;
 
+    public bool UseSimTime { get; set; } = false;
+
     // oldest first
     List<long> m_Timestamps = new List<long>();
     // same order as m_Timestamps
@@ -94,7 +96,7 @@ public class TFStream
     {
         TFFrame newEntry = new TFFrame(translation, rotation);
         // most likely case: we're just adding a newer transform to the end of the list
-        if (m_Timestamps.Count == 0 || m_Timestamps[m_Timestamps.Count - 1] < timestamp)
+        if (!UseSimTime || m_Timestamps.Count == 0 || m_Timestamps[m_Timestamps.Count - 1] < timestamp)
         {
             m_Timestamps.Add(timestamp);
             m_Frames.Add(newEntry);

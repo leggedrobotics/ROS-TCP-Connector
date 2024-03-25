@@ -90,7 +90,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
         OutgoingMessageQueue m_OutgoingMessageQueue = new OutgoingMessageQueue();
 
-        ConcurrentQueue<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentQueue<Tuple<string, byte[]>>();
+        ConcurrentStack<Tuple<string, byte[]>> m_IncomingMessages = new ConcurrentStack<Tuple<string, byte[]>>();
         CancellationTokenSource m_ConnectionThreadCancellation;
         public bool HasConnectionThread => m_ConnectionThreadCancellation != null;
 
@@ -118,6 +118,8 @@ namespace Unity.Robotics.ROSTCPConnector
         public const string PlayerPrefsKey_ROS_TCP_PORT = "ROS_TCP_PORT";
         public static string RosIPAddressPref => PlayerPrefs.GetString(PlayerPrefsKey_ROS_IP, "127.0.0.1");
         public static int RosPortPref => PlayerPrefs.GetInt(PlayerPrefsKey_ROS_TCP_PORT, 10000);
+
+        private HashSet<string> m_TopicList = new HashSet<string>();
 
         public bool HasSubscriber(string topic)
         {
@@ -481,6 +483,8 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             InitializeHUD();
 
+            m_TopicList = new HashSet<string>();
+
             HudPanel.RegisterHeader(DrawHeaderGUI);
 
             if (listenForTFMessages)
@@ -572,11 +576,19 @@ namespace Unity.Robotics.ROSTCPConnector
         {
             s_RealTimeSinceStartup = Time.realtimeSinceStartup;
 
+            m_TopicList.Clear();
+
             Tuple<string, byte[]> data;
-            while (m_IncomingMessages.TryDequeue(out data))
+            Debug.Log($"m_IncomingMessages.Count: {m_IncomingMessages.Count}");
+            while (m_IncomingMessages.TryPop(out data))
             {
                 (string topic, byte[] contents) = data;
                 m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
+
+                // if(topic == "/tf")
+                // {
+                //     continue;
+                // }
 
                 if (m_SpecialIncomingMessageHandler != null)
                 {
@@ -588,6 +600,11 @@ namespace Unity.Robotics.ROSTCPConnector
                 }
                 else
                 {
+                    if(topic != "/tf" && topic != "/tf_static")
+                    {
+                        if(!m_TopicList.Add(topic))
+                            continue;
+                    }
                     RosTopicState topicInfo = GetTopic(topic);
                     // if this is null, we have received a message on a topic we've never heard of...!?
                     // all we can do is ignore it, we don't even know what type it is
@@ -598,6 +615,7 @@ namespace Unity.Robotics.ROSTCPConnector
                             //Add a try catch so that bad logic from one received message doesn't
                             //cause the Update method to exit without processing other received messages.
                             topicInfo.OnMessageReceived(contents);
+
                         }
                         catch (Exception e)
                         {
@@ -769,7 +787,7 @@ namespace Unity.Robotics.ROSTCPConnector
             Action<NetworkStream> OnConnectionStartedCallback,
             Action DeregisterAll,
             OutgoingMessageQueue outgoingQueue,
-            ConcurrentQueue<Tuple<string, byte[]>> incomingQueue,
+            ConcurrentStack<Tuple<string, byte[]>> incomingQueue,
             CancellationToken token)
         {
             //Debug.Log("ConnectionThread begins");
@@ -870,14 +888,14 @@ namespace Unity.Robotics.ROSTCPConnector
             }
         }
 
-        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentQueue<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
+        static async Task ReaderThread(int readerIdx, NetworkStream networkStream, ConcurrentStack<Tuple<string, byte[]>> queue, int sleepMilliseconds, CancellationToken token)
         {
             // First message should be the handshake
             Tuple<string, byte[]> handshakeContent = await ReadMessageContents(networkStream, sleepMilliseconds, token);
             if (handshakeContent.Item1 == SysCommand.k_SysCommand_Handshake)
             {
                 ROSConnection.m_HasConnectionError = false;
-                queue.Enqueue(handshakeContent);
+                queue.Push(handshakeContent);
             }
             else
             {
@@ -892,7 +910,9 @@ namespace Unity.Robotics.ROSTCPConnector
                     ROSConnection.m_HasConnectionError = false;
 
                     if (content.Item1 != "") // ignore keepalive messages
-                        queue.Enqueue(content);
+                    {
+                        queue.Push(content);
+                    }
                 }
                 catch (OperationCanceledException)
                 {

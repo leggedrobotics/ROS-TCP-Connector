@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
+using System.Threading;
+
 
 namespace Unity.Robotics.ROSTCPConnector
 {
@@ -50,6 +52,16 @@ namespace Unity.Robotics.ROSTCPConnector
         public float LastMessageReceivedRealtime => m_LastMessageReceivedRealtime;
         public float LastMessageSentRealtime => m_LastMessageSentRealtime;
 
+        private Thread runner;
+        private Message _message;
+        private bool _run;
+        private bool _newMessage;
+
+
+// Create a thread pool with a maximum of 10 threads
+
+        
+
         internal RosTopicState(string topic, string rosMessageName, ROSConnection connection, ROSConnection.InternalAPI connectionInternal, bool isService, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
             m_Topic = topic;
@@ -57,6 +69,27 @@ namespace Unity.Robotics.ROSTCPConnector
             m_RosMessageName = rosMessageName;
             m_Connection = connection;
             m_ConnectionInternal = connectionInternal;
+
+            // runner = new Thread(() =>
+            // {
+            //     while (_run)
+            //     {
+            //         if (_newMessage)
+            //         {
+            //             _newMessage = false;
+            //             foreach (var item in m_SubscriberCallbacks)
+            //             {
+            //                 if(!_run) return;
+            //                 item(_message);
+            //             }
+            //         }
+            //     }
+            // });
+
+            // runner.Start();
+            _run = true;
+
+
             if (isService && subtopic == MessageSubtopic.Default)
             {
                 m_ServiceResponseTopic = new RosTopicState(topic, rosMessageName, m_Connection, m_ConnectionInternal, isService, MessageSubtopic.Response);
@@ -77,8 +110,8 @@ namespace Unity.Robotics.ROSTCPConnector
             m_LastMessageReceivedRealtime = Time.realtimeSinceStartup;
             if (m_IsRosService && m_ServiceResponseTopic != null)
             {
-                //  For a service, incoming messages are a different type from outgoing messages.
-                //  We process them using a separate RosTopicState.
+                // For a service, incoming messages are a different type from outgoing messages.
+                // We process them using a separate RosTopicState.
                 m_ServiceResponseTopic.OnMessageReceived(data);
                 return;
             }
@@ -89,10 +122,21 @@ namespace Unity.Robotics.ROSTCPConnector
                 return;
             }
 
-            Message message = Deserialize(data);
+            _message = Deserialize(data);
 
-            m_SubscriberCallbacks.ForEach(item => item(message));
+            if(true || m_Topic == "/tf")
+            {
+                m_SubscriberCallbacks.ForEach(item => item(_message));
+            } else {
+                _newMessage = true;
+
+            }
+
+            
         }
+
+
+
 
         void OnMessageSent(Message message)
         {

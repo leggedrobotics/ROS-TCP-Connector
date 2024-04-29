@@ -579,7 +579,6 @@ namespace Unity.Robotics.ROSTCPConnector
             m_TopicList.Clear();
 
             Tuple<string, byte[]> data;
-            Debug.Log($"m_IncomingMessages.Count: {m_IncomingMessages.Count}");
             while (m_IncomingMessages.TryPop(out data))
             {
                 (string topic, byte[] contents) = data;

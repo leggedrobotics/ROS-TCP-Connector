@@ -67,6 +67,7 @@ public class TFStream
         Name = name;
         TFTopic = tfTopic;
         m_GameObject = new GameObject(name);
+        m_GameObject.tag = "tf";
         SetParent(parent);
     }
 

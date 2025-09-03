@@ -50,7 +50,7 @@ public class TFStream
     public TFStream Parent { get; private set; }
     public IEnumerable<TFStream> Children => m_Children;
 
-    public bool UseSimTime { get; set; } = false;
+    public static bool UseSimTime { get; set; } = false;
 
     // oldest first
     List<long> m_Timestamps = new List<long>();

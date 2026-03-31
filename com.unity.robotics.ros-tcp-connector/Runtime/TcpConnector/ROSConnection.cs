@@ -65,6 +65,9 @@ namespace Unity.Robotics.ROSTCPConnector
         internal HudPanel m_HudPanel = null;
         public HudPanel HUDPanel => m_HudPanel;
 
+        // The version of ROS that we're communicating with. This is set during the handshake process when we connect, and is used to determine how to serialize messages (e.g. whether to include the message type in the header or not)
+        ROSVersion rosVersion = ROSVersion.ROS1;
+
         class OutgoingMessageQueue
         {
             ConcurrentQueue<OutgoingMessageSender> m_OutgoingMessageQueue;
@@ -127,13 +130,19 @@ namespace Unity.Robotics.ROSTCPConnector
             return m_Topics.TryGetValue(topic, out info) && info.HasSubscriberCallback;
         }
 
-        MessageSerializer m_MessageSerializer = new MessageSerializer();
-        MessageDeserializer m_MessageDeserializer = new MessageDeserializer();
+        MessageSerializer m_MessageSerializer;
+        MessageDeserializer m_MessageDeserializer;
         List<Action<string[]>> m_TopicsListCallbacks = new List<Action<string[]>>();
         List<Action<Dictionary<string, string>>> m_TopicsAndTypesListCallbacks = new List<Action<Dictionary<string, string>>>();
         List<Action<RosTopicState>> m_NewTopicCallbacks = new List<Action<RosTopicState>>();
 
         Dictionary<string, RosTopicState> m_Topics = new Dictionary<string, RosTopicState>();
+
+        ROSConnection()
+        {
+            m_MessageSerializer = new MessageSerializer((int) rosVersion);
+            m_MessageDeserializer = new MessageDeserializer((int) rosVersion);
+        }
 
         public void ListenForTopics(Action<RosTopicState> callback, bool notifyAllExistingTopics = false)
         {
@@ -666,17 +675,23 @@ namespace Unity.Robotics.ROSTCPConnector
                         }
 
                         var handshakeMetadata = JsonUtility.FromJson<SysCommand_Handshake_Metadata>(handshakeCommand.metadata);
-#if ROS2
-                        if (handshakeMetadata.protocol != "ROS2")
+
+                        if (handshakeMetadata.protocol == "ROS2")
                         {
-                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS2 mode. Switch it from the Robotics/Ros Settings menu.");
+                            rosVersion = ROSVersion.ROS2;
+                            Debug.Log($"Connected to ROS-TCP-Endpoint with compatible protocol: {handshakeMetadata.protocol}");
                         }
-#else
-                        if (handshakeMetadata.protocol != "ROS1")
+                        else if (handshakeMetadata.protocol == "ROS1")
                         {
-                            Debug.LogError($"Incompatible protocol: ROS-TCP-Endpoint is using {handshakeMetadata.protocol}, but Unity is in ROS1 mode. Switch it from the Robotics/Ros Settings menu.");
+                            rosVersion = ROSVersion.ROS1;
+                            Debug.Log($"Connected to ROS-TCP-Endpoint with compatible protocol: {handshakeMetadata.protocol}");
                         }
-#endif
+                        else
+                        {
+                            Debug.LogError($"Unknown protocol: {handshakeMetadata.protocol}. Expected 'ROS1' or 'ROS2'.");
+                        }
+                        m_MessageSerializer.rosVersion = (int) rosVersion;
+                        m_MessageDeserializer.rosVersion = (int) rosVersion;
                     }
                     break;
                 case SysCommand.k_SysCommand_Log:
@@ -792,7 +807,6 @@ namespace Unity.Robotics.ROSTCPConnector
             //Debug.Log("ConnectionThread begins");
             int nextReaderIdx = 101;
             int nextReconnectionDelay = 1000;
-            MessageSerializer messageSerializer = new MessageSerializer();
 
             while (!token.IsCancellationRequested)
             {
@@ -838,7 +852,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
                         while (outgoingQueue.TryDequeue(out OutgoingMessageSender sendsOutgoingMessages))
                         {
-                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(messageSerializer, networkStream);
+                            OutgoingMessageSender.SendToState sendToState = sendsOutgoingMessages.SendInternal(ROSConnection.GetOrCreateInstance().m_MessageSerializer, networkStream);
                             switch (sendToState)
                             {
                                 case OutgoingMessageSender.SendToState.Normal:
@@ -997,7 +1011,7 @@ namespace Unity.Robotics.ROSTCPConnector
             {
                 throw new ArgumentException("stream cannot be null!");
             }
-            MessageSerializer messageSerializer = new MessageSerializer();
+            MessageSerializer messageSerializer = ROSConnection.GetOrCreateInstance().m_MessageSerializer;
             PopulateSysCommand(messageSerializer, command, param);
             messageSerializer.SendTo(stream);
         }
@@ -1077,11 +1091,19 @@ namespace Unity.Robotics.ROSTCPConnector
                 HasConnectionError
             );
 
-#if ROS2
-            string protocolName = "ROS2";
-#else
-            string protocolName = "ROS";
-#endif
+            string protocolName;
+            switch (rosVersion)
+            {
+                case ROSVersion.ROS1:
+                    protocolName = "ROS1";
+                    break;
+                case ROSVersion.ROS2:
+                    protocolName = "ROS2";
+                    break;
+                default:
+                    protocolName = "Unknown ROS Version";
+                    break;
+            }
 
             GUILayout.Space(30);
             GUILayout.Label($"{protocolName} IP: ", labelStyle, GUILayout.Width(100));

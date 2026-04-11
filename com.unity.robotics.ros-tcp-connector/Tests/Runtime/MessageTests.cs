@@ -57,8 +57,10 @@ namespace UnitTests
         {
             const int v = 1234;
             Int32Msg inMsg = new Int32Msg(v);
-            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize);
+            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
@@ -67,8 +69,10 @@ namespace UnitTests
         {
             const int v = int.MaxValue;
             Int32Msg inMsg = new Int32Msg(v);
-            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize);
+            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
@@ -77,8 +81,10 @@ namespace UnitTests
         {
             const int v = int.MinValue;
             Int32Msg inMsg = new Int32Msg(v);
-            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize);
+            Int32Msg outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, Int32Msg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
@@ -87,8 +93,10 @@ namespace UnitTests
         {
             const string v = "hello";
             StringMsg inMsg = new StringMsg(v);
-            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize);
+            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
@@ -97,8 +105,10 @@ namespace UnitTests
         {
             const string v = "ಠ_ಠ";
             StringMsg inMsg = new StringMsg(v);
-            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize);
+            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
@@ -107,16 +117,18 @@ namespace UnitTests
         {
             const string v = "";
             StringMsg inMsg = new StringMsg(v);
-            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize);
+            StringMsg outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 1);
             Assert.AreEqual(inMsg.data, v);
+            Assert.AreEqual(inMsg.data, outMsg.data);
+            outMsg = MessageRoundTrip(inMsg, StringMsg.Deserialize, 2);
             Assert.AreEqual(inMsg.data, outMsg.data);
         }
 
-        public T MessageRoundTrip<T>(T inMsg, Func<MessageDeserializer, T> deserialize) where T : Message
+        public T MessageRoundTrip<T>(T inMsg, Func<MessageDeserializer, T> deserialize, int rosVersion) where T : Message
         {
-            MessageSerializer ser = new MessageSerializer();
+            MessageSerializer ser = new MessageSerializer(rosVersion);
             ser.SerializeMessage(inMsg);
-            MessageDeserializer deser = new MessageDeserializer();
+            MessageDeserializer deser = new MessageDeserializer(rosVersion);
             deser.InitWithBuffer(ser.GetBytes());
             return deserialize(deser);
         }

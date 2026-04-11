@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## Unreleased
 
+Updated to automatically swap between ROS1 and ROS2 mode depending on the connected endpoint's ROS version.
+
 ### Upgrade Notes
 
 ### Known Issues

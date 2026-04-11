@@ -66,7 +66,13 @@ namespace Unity.Robotics.ROSTCPConnector
         public HudPanel HUDPanel => m_HudPanel;
 
         // The version of ROS that we're communicating with. This is set during the handshake process when we connect, and is used to determine how to serialize messages (e.g. whether to include the message type in the header or not)
-        public ROSVersion rosVersion = ROSVersion.ROS1;
+        ROSVersion m_rosVersion = ROSVersion.ROS1;
+        public ROSVersion rosVersion => m_rosVersion;
+        public enum ROSVersion
+        {
+            ROS1 = 1,
+            ROS2 = 2
+        }
 
         class OutgoingMessageQueue
         {
@@ -140,8 +146,15 @@ namespace Unity.Robotics.ROSTCPConnector
 
         ROSConnection()
         {
-            m_MessageSerializer = new MessageSerializer((int) rosVersion);
-            m_MessageDeserializer = new MessageDeserializer((int) rosVersion);
+            m_MessageSerializer = new MessageSerializer((int) m_rosVersion);
+            m_MessageDeserializer = new MessageDeserializer((int) m_rosVersion);
+        }
+
+        public void UpdateROSVersion(ROSVersion version)
+        {
+            m_MessageSerializer.rosVersion = (int) version;
+            m_MessageDeserializer.rosVersion = (int) version;
+            m_rosVersion = version;
         }
 
         public void ListenForTopics(Action<RosTopicState> callback, bool notifyAllExistingTopics = false)
@@ -678,20 +691,18 @@ namespace Unity.Robotics.ROSTCPConnector
 
                         if (handshakeMetadata.protocol == "ROS2")
                         {
-                            rosVersion = ROSVersion.ROS2;
+                            UpdateROSVersion(ROSVersion.ROS2);
                             Debug.Log($"Connected to ROS-TCP-Endpoint with compatible protocol: {handshakeMetadata.protocol}");
                         }
                         else if (handshakeMetadata.protocol == "ROS1")
                         {
-                            rosVersion = ROSVersion.ROS1;
+                            UpdateROSVersion(ROSVersion.ROS1);
                             Debug.Log($"Connected to ROS-TCP-Endpoint with compatible protocol: {handshakeMetadata.protocol}");
                         }
                         else
                         {
                             Debug.LogError($"Unknown protocol: {handshakeMetadata.protocol}. Expected 'ROS1' or 'ROS2'.");
                         }
-                        m_MessageSerializer.rosVersion = (int) rosVersion;
-                        m_MessageDeserializer.rosVersion = (int) rosVersion;
                     }
                     break;
                 case SysCommand.k_SysCommand_Log:

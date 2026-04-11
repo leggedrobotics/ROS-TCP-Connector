@@ -33,11 +33,7 @@ public static class RosEditorAnalytics
 
         var data = new AnalyticsData()
         {
-#if ROS2
-            protocol = "ROS2",
-#else
-            protocol = "ROS1",
-#endif
+            protocol = "ROS1 & ROS2",
         };
 
         EditorAnalytics.SendEventWithLimit(k_EventName, data);

@@ -1,6 +1,7 @@
 using System;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.Visualizations;
+using Unity.Robotics.ROSTCPConnector;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ public class TimeReferenceDefaultVisualizer : GuiVisualizer<TimeReferenceMsg>
         return () =>
         {
             message.header.GUI();
-            GUILayout.Label($"Time reference:{message.time_ref.ToTimestampString()}\nSource: {message.source}");
+            GUILayout.Label($"Time reference:{message.time_ref.ToTimestampString((int) ROSConnection.GetOrCreateInstance().rosVersion)}\nSource: {message.source}");
         };
     }
 }

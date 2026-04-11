@@ -64,12 +64,15 @@ public class TFSystem
             {
                 var frame_id = tf_message.header.frame_id + "/" + tf_message.child_frame_id;
                 var tf = GetOrCreateFrame(frame_id);
+                
+                int rosVersion = (int) ROSConnection.GetOrCreateInstance().rosVersion;
                 tf.Add(
-                    tf_message.header.stamp.ToLongTime(),
+                    tf_message.header.stamp.ToLongTime(rosVersion),
                     tf_message.transform.translation.From<FLU>(),
                     tf_message.transform.rotation.From<FLU>()
                 );
                 NotifyChanged(tf);
+                Debug.Log("Received TF " + frame_id + " at time " + tf_message.header.stamp + " with translation " + tf_message.transform.translation.x + ", " + tf_message.transform.translation.y + ", " + tf_message.transform.translation.z);
             }
         }
 
@@ -154,7 +157,8 @@ public class TFSystem
 
     public TFFrame GetTransform(HeaderMsg header, string tfTopic = "/tf")
     {
-        return GetTransform(header.frame_id, header.stamp.ToLongTime(), tfTopic);
+        int rosVersion = (int) ROSConnection.GetOrCreateInstance().rosVersion;
+        return GetTransform(header.frame_id, header.stamp.ToLongTime(rosVersion), tfTopic);
     }
 
     public TFFrame GetTransform(string frame_id, long time, string tfTopic = "/tf")
@@ -167,7 +171,8 @@ public class TFSystem
 
     public TFFrame GetTransform(string frame_id, TimeMsg time, string tfTopic = "/tf")
     {
-        return GetTransform(frame_id, time.ToLongTime(), tfTopic);
+        int rosVersion = (int) ROSConnection.GetOrCreateInstance().rosVersion;
+        return GetTransform(frame_id, time.ToLongTime(rosVersion), tfTopic);
     }
 
     public TFStream GetTransformStream(string frame_id, string tfTopic = "/tf")

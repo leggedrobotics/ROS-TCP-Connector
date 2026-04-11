@@ -62,7 +62,7 @@ namespace UnitTests
                 new TransformMsg( unityPosition.To<FLU>(), new QuaternionMsg()
             ))}));
 
-            TFFrame frame = stream.GetWorldTF(time.ToLongTime());
+            TFFrame frame = stream.GetWorldTF(time.ToLongTime(1));
             Assert.AreEqual(frame.translation.x, unityPosition.x);
             Assert.AreEqual(frame.translation.y, unityPosition.y);
             Assert.AreEqual(frame.translation.z, unityPosition.z);
@@ -87,7 +87,7 @@ namespace UnitTests
                 new TransformMsg( unityPosition.To<FLU>(), new QuaternionMsg()
             ))}));
 
-            TFFrame frame = stream.GetWorldTF(time.ToLongTime());
+            TFFrame frame = stream.GetWorldTF(time.ToLongTime(1));
             Assert.AreEqual(frame.translation.x, unityPosition.x);
             Assert.AreEqual(frame.translation.y, unityPosition.y);
             Assert.AreEqual(frame.translation.z, unityPosition.z);
@@ -141,9 +141,9 @@ namespace UnitTests
                 new TransformMsg( unityPosition2.To<FLU>(), new QuaternionMsg()
             ))}));
             TimeMsg time1_5 = MakeTimeMsg((time1_secs + time2_secs) / 2, 0, 1);
-            Vector3 pointAtTime1 = stream.GetWorldTF(time1).translation;
-            Vector3 pointAtTime1_5 = stream.GetWorldTF(time1_5).translation;
-            Vector3 pointAtTime2 = stream.GetWorldTF(time2).translation;
+            Vector3 pointAtTime1 = stream.GetWorldTF(time1, 1).translation;
+            Vector3 pointAtTime1_5 = stream.GetWorldTF(time1_5, 1).translation;
+            Vector3 pointAtTime2 = stream.GetWorldTF(time2, 1).translation;
             Vector3 unityPosition1_5 = (unityPosition1 + unityPosition2) / 2;
             Assert.AreEqual(pointAtTime1, unityPosition1);
             Assert.AreEqual(pointAtTime1_5, unityPosition1_5);
@@ -186,11 +186,11 @@ namespace UnitTests
             TimeMsg time2_5 = MakeTimeMsg((time2_secs + time3_secs) / 2, 0, 1);
             Vector3 unityPosition1_5 = (unityPosition1 + unityPosition2) / 2;
             Vector3 unityPosition2_5 = (unityPosition2 + unityPosition3) / 2;
-            Assert.AreEqual(stream.GetWorldTF(time1).translation, unityPosition1);
-            Assert.AreEqual(stream.GetWorldTF(time1_5).translation, unityPosition1_5);
-            Assert.AreEqual(stream.GetWorldTF(time2).translation, unityPosition2);
-            Assert.AreEqual(stream.GetWorldTF(time2_5).translation, unityPosition2_5);
-            Assert.AreEqual(stream.GetWorldTF(time3).translation, unityPosition3);
+            Assert.AreEqual(stream.GetWorldTF(time1, 1).translation, unityPosition1);
+            Assert.AreEqual(stream.GetWorldTF(time1_5, 1).translation, unityPosition1_5);
+            Assert.AreEqual(stream.GetWorldTF(time2, 1).translation, unityPosition2);
+            Assert.AreEqual(stream.GetWorldTF(time2_5, 1).translation, unityPosition2_5);
+            Assert.AreEqual(stream.GetWorldTF(time3, 1).translation, unityPosition3);
         }
 
         [Test]
@@ -210,7 +210,7 @@ namespace UnitTests
                 new TransformMsg( unityPosition.To<FLU>(), new QuaternionMsg()
             ))}));
 
-            TFFrame frame = stream.GetWorldTF(time.ToLongTime());
+            TFFrame frame = stream.GetWorldTF(time.ToLongTime(2));
             Assert.AreEqual(frame.translation.x, unityPosition.x);
             Assert.AreEqual(frame.translation.y, unityPosition.y);
             Assert.AreEqual(frame.translation.z, unityPosition.z);
@@ -235,7 +235,7 @@ namespace UnitTests
                 new TransformMsg( unityPosition.To<FLU>(), new QuaternionMsg()
             ))}));
 
-            TFFrame frame = stream.GetWorldTF(time.ToLongTime());
+            TFFrame frame = stream.GetWorldTF(time.ToLongTime(2));
             Assert.AreEqual(frame.translation.x, unityPosition.x);
             Assert.AreEqual(frame.translation.y, unityPosition.y);
             Assert.AreEqual(frame.translation.z, unityPosition.z);
@@ -289,9 +289,9 @@ namespace UnitTests
                 new TransformMsg( unityPosition2.To<FLU>(), new QuaternionMsg()
             ))}));
             TimeMsg time1_5 = MakeTimeMsg((time1_secs + time2_secs) / 2, 0, 2);
-            Vector3 pointAtTime1 = stream.GetWorldTF(time1).translation;
-            Vector3 pointAtTime1_5 = stream.GetWorldTF(time1_5).translation;
-            Vector3 pointAtTime2 = stream.GetWorldTF(time2).translation;
+            Vector3 pointAtTime1 = stream.GetWorldTF(time1, 2).translation;
+            Vector3 pointAtTime1_5 = stream.GetWorldTF(time1_5, 2).translation;
+            Vector3 pointAtTime2 = stream.GetWorldTF(time2, 2).translation;
             Vector3 unityPosition1_5 = (unityPosition1 + unityPosition2) / 2;
             Assert.AreEqual(pointAtTime1, unityPosition1);
             Assert.AreEqual(pointAtTime1_5, unityPosition1_5);
@@ -334,11 +334,11 @@ namespace UnitTests
             TimeMsg time2_5 = MakeTimeMsg((time2_secs + time3_secs) / 2, 0, 2);
             Vector3 unityPosition1_5 = (unityPosition1 + unityPosition2) / 2;
             Vector3 unityPosition2_5 = (unityPosition2 + unityPosition3) / 2;
-            Assert.AreEqual(stream.GetWorldTF(time1).translation, unityPosition1);
-            Assert.AreEqual(stream.GetWorldTF(time1_5).translation, unityPosition1_5);
-            Assert.AreEqual(stream.GetWorldTF(time2).translation, unityPosition2);
-            Assert.AreEqual(stream.GetWorldTF(time2_5).translation, unityPosition2_5);
-            Assert.AreEqual(stream.GetWorldTF(time3).translation, unityPosition3);
+            Assert.AreEqual(stream.GetWorldTF(time1, 2).translation, unityPosition1);
+            Assert.AreEqual(stream.GetWorldTF(time1_5, 2).translation, unityPosition1_5);
+            Assert.AreEqual(stream.GetWorldTF(time2, 2).translation, unityPosition2);
+            Assert.AreEqual(stream.GetWorldTF(time2_5, 2).translation, unityPosition2_5);
+            Assert.AreEqual(stream.GetWorldTF(time3, 2).translation, unityPosition3);
         }
     }
 }

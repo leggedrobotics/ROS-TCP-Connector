@@ -206,13 +206,14 @@ namespace Unity.Robotics.Visualizations
 
         public static void GUI(this HeaderMsg message)
         {
-            if ((int) ROSConnection.GetOrCreateInstance().rosVersion != 2)
+            int rosVersion = (int) ROSConnection.GetOrCreateInstance().rosVersion;
+            if (rosVersion != 2)
             {
-                GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
+                GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString(rosVersion)}>");
             }
             else
             {
-                GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString()}>");
+                GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString(rosVersion)}>");
             }
         }
 
@@ -270,7 +271,7 @@ namespace Unity.Robotics.Visualizations
 
         public static void GUI(this MapMetaDataMsg message)
         {
-            GUILayout.Label($"Load time: {message.map_load_time.ToTimestampString()}");
+            GUILayout.Label($"Load time: {message.map_load_time.ToTimestampString((int) ROSConnection.GetOrCreateInstance().rosVersion)}");
             GUILayout.Label($"Resolution: {message.resolution}");
             GUILayout.Label($"Size: {message.width}x{message.height}");
             message.origin.GUI();
@@ -412,7 +413,7 @@ namespace Unity.Robotics.Visualizations
 
         public static void GUI(this TimeMsg message)
         {
-            GUILayout.Label(message.ToTimestampString());
+            GUILayout.Label(message.ToTimestampString((int) ROSConnection.GetOrCreateInstance().rosVersion));
         }
 
         public static void GUI(this TransformMsg message)

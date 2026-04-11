@@ -206,12 +206,14 @@ namespace Unity.Robotics.Visualizations
 
         public static void GUI(this HeaderMsg message)
         {
-#if !ROS2
-            GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
-#else
-            GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString()}>");
-#endif
-
+            if ((int) ROSConnection.GetOrCreateInstance().rosVersion != 2)
+            {
+                GUILayout.Label($"<{message.seq} {message.frame_id} {message.stamp.ToTimestampString()}>");
+            }
+            else
+            {
+                GUILayout.Label($"<{message.frame_id} {message.stamp.ToTimestampString()}>");
+            }
         }
 
         public static void GUITexture(this Texture2D tex)

@@ -70,13 +70,7 @@ namespace RosMessageTypes.Sensor
         public string distortion_model;
         //  The distortion parameters, size depending on the distortion model.
         //  For "plumb_bob", the 5 parameters are: (k1, k2, t1, t2, k3).
-#if ROS2
         public double[] d;
-        // public double[] D { get => d; set => d = value; }
-
-        public double[] D;
-        // public double[] d { get => D; set => D = value; }
-#endif
         //  Intrinsic camera matrix for the raw (distorted) images.
         //      [fx  0 cx]
         //  K = [ 0 fy cy]
@@ -84,25 +78,13 @@ namespace RosMessageTypes.Sensor
         //  Projects 3D points in the camera coordinate frame to 2D pixel
         //  coordinates using the focal lengths (fx, fy) and principal point
         //  (cx, cy).
-#if ROS2
         public double[] k;
-        // public double[] K { get => k; set => k = value; }
-
-        public double[] K;
-        // public double[] k { get => K; set => K = value; }
-#endif
         //  3x3 row-major matrix
         //  Rectification matrix (stereo cameras only)
         //  A rotation matrix aligning the camera coordinate system to the ideal
         //  stereo image plane so that epipolar lines in both stereo images are
         //  parallel.
-#if ROS2
         public double[] r;
-        // public double[] R { get => r; set => r = value; }
-
-        public double[] R;
-        // public double[] r { get => R; set => R = value; }
-#endif
         //  3x3 row-major matrix
         //  Projection/camera matrix
         //      [fx'  0  cx' Tx]
@@ -128,12 +110,7 @@ namespace RosMessageTypes.Sensor
         //          x = u / w
         //          y = v / w
         //   This holds for both images of a stereo pair.
-#if ROS2
         public double[] p;
-        // public double[] P { get => p; set => p = value; }
-        public double[] P;
-        // public double[] p { get => P; set => P = value; }
-#endif
         //  3x4 row-major matrix
         // ######################################################################
         //                       Operational Parameters                         #
@@ -196,20 +173,10 @@ namespace RosMessageTypes.Sensor
             deserializer.Read(out this.height);
             deserializer.Read(out this.width);
             deserializer.Read(out this.distortion_model);
-        //     if (deserializer.rosVersion == 2)
-        //     {
-                deserializer.Read(out this.d, sizeof(double), deserializer.ReadLength());
-                deserializer.Read(out this.k, sizeof(double), 9);
-                deserializer.Read(out this.r, sizeof(double), 9);
-                deserializer.Read(out this.p, sizeof(double), 12);
-        //     }
-        //     else
-        //     {
-        //         deserializer.Read(out this.D, sizeof(double), deserializer.ReadLength());
-        //         deserializer.Read(out this.K, sizeof(double), 9);
-        //         deserializer.Read(out this.R, sizeof(double), 9);
-        //         deserializer.Read(out this.P, sizeof(double), 12);
-        //     }
+            deserializer.Read(out this.d, sizeof(double), deserializer.ReadLength());
+            deserializer.Read(out this.k, sizeof(double), 9);
+            deserializer.Read(out this.r, sizeof(double), 9);
+            deserializer.Read(out this.p, sizeof(double), 12);
             deserializer.Read(out this.binning_x);
             deserializer.Read(out this.binning_y);
             this.roi = RegionOfInterestMsg.Deserialize(deserializer);
@@ -221,22 +188,11 @@ namespace RosMessageTypes.Sensor
             serializer.Write(this.height);
             serializer.Write(this.width);
             serializer.Write(this.distortion_model);
-        //     if (serializer.rosVersion == 2)
-        //     {
-                serializer.WriteLength(this.d);
-                serializer.Write(this.d);
-                serializer.Write(this.k);
-                serializer.Write(this.r);
-                serializer.Write(this.p);
-        //     }
-        //     else
-        //     {
-        //         serializer.WriteLength(this.D);
-        //         serializer.Write(this.D);
-        //         serializer.Write(this.K);
-        //         serializer.Write(this.R);
-        //         serializer.Write(this.P);
-        //     }
+            serializer.WriteLength(this.d);
+            serializer.Write(this.d);
+            serializer.Write(this.k);
+            serializer.Write(this.r);
+            serializer.Write(this.p);
             serializer.Write(this.binning_x);
             serializer.Write(this.binning_y);
             serializer.Write(this.roi);

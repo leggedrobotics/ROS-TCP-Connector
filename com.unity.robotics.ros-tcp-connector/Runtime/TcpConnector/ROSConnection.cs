@@ -66,7 +66,7 @@ namespace Unity.Robotics.ROSTCPConnector
         public HudPanel HUDPanel => m_HudPanel;
 
         // The version of ROS that we're communicating with. This is set during the handshake process when we connect, and is used to determine how to serialize messages (e.g. whether to include the message type in the header or not)
-        ROSVersion rosVersion = ROSVersion.ROS1;
+        public ROSVersion rosVersion = ROSVersion.ROS1;
 
         class OutgoingMessageQueue
         {

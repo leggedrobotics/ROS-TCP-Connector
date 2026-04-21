@@ -164,9 +164,9 @@ public class TFStream
         }
     }
 
-    public TFFrame GetLocalTF(TimeMsg time)
+    public TFFrame GetLocalTF(TimeMsg time, int rosVersion)
     {
-        return GetLocalTF(time.ToLongTime());
+        return GetLocalTF(time.ToLongTime(rosVersion));
     }
 
     public TFFrame GetWorldTF(long time = 0)
@@ -180,9 +180,9 @@ public class TFStream
         return parent.Compose(GetLocalTF(time));
     }
 
-    public TFFrame GetWorldTF(TimeMsg time)
+    public TFFrame GetWorldTF(TimeMsg time, int rosVersion)
     {
-        return GetWorldTF(time.ToLongTime());
+        return GetWorldTF(time.ToLongTime(rosVersion));
     }
 
     // Can we safely stop polling for updates to a transform at this time?

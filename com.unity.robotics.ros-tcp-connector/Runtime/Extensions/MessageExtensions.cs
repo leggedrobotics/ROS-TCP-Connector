@@ -111,20 +111,35 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
     // Convenience functions for built-in message types
     public static class MessageExtensions
     {
-        public static string ToTimestampString(this TimeMsg message)
+        public static string ToTimestampString(this TimeMsg message, int rosVersion)
         {
             // G: format using short date and long time
-            return message.ToDateTime().ToString("G") + $"(+{message.nanosec})";
+            return message.ToDateTime(rosVersion).ToString("G") + $"(+{message.nanosec})";
         }
 
-        public static long ToLongTime(this TimeMsg message)
+        public static long ToLongTime(this TimeMsg message, int rosVersion)
         {
-            return (long)message.sec << 32 | message.nanosec;
+            if (rosVersion != 2)
+            {
+                return (long)message.u_sec << 32 | message.nanosec;
+            }
+            else
+            {
+                return (long)message.sec << 32 | message.nanosec;
+            }
         }
 
-        public static DateTime ToDateTime(this TimeMsg message)
+        public static DateTime ToDateTime(this TimeMsg message, int rosVersion)
         {
-            DateTime time = new DateTime(message.sec);
+            DateTime time;
+            if (rosVersion != 2)
+            {
+                time = new DateTime(message.u_sec);
+            }
+            else 
+            {
+                time = new DateTime(message.sec);
+            }
             time = time.AddMilliseconds(message.nanosec / 1E6);
             return time;
         }

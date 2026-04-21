@@ -9,9 +9,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
     {
         byte[] data;
         int offset;
-#if ROS2
+
         int alignmentCorrection;
-#endif
+
+        public int rosVersion;
+
+        public MessageDeserializer(int rosVersion)
+        {
+            this.rosVersion = rosVersion;
+        }
 
         public Message DeserializeMessage(string rosMessageName, byte[] data, MessageSubtopic subtopic = MessageSubtopic.Default)
         {
@@ -35,18 +41,20 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         {
             this.data = data;
             this.offset = 0;
-#if ROS2
-            // skip ROS2's 4 byte header
-            offset = 4;
-            alignmentCorrection = -4;
-#endif
+            if (rosVersion == 2)
+            {
+                // skip ROS2's 4 byte header
+                offset = 4;
+                alignmentCorrection = -4;
+            }
         }
 
         void Align(int dataSize)
         {
-#if ROS2
-            offset += (dataSize - ((offset + alignmentCorrection) % dataSize)) & (dataSize - 1);
-#endif
+            if (rosVersion == 2)
+            {        
+                offset += (dataSize - ((offset + alignmentCorrection) % dataSize)) & (dataSize - 1);
+            }
         }
 
         public int ReadLength()
@@ -134,12 +142,15 @@ namespace Unity.Robotics.ROSTCPConnector.MessageGeneration
         public void Read(out string value)
         {
             var length = ReadLength();
-#if !ROS2
-            value = System.Text.Encoding.UTF8.GetString(data, offset, length);
-#else
-            // ROS2 strings have a null byte at the end
-            value = System.Text.Encoding.UTF8.GetString(data, offset, length - 1);
-#endif
+            if (rosVersion != 2)
+            {
+                value = System.Text.Encoding.UTF8.GetString(data, offset, length);
+            }
+            else
+            {
+                // ROS2 strings have a null byte at the end
+                value = System.Text.Encoding.UTF8.GetString(data, offset, length - 1);
+            }
             offset += length;
         }
 

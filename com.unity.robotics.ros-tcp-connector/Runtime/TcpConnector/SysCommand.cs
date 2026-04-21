@@ -45,13 +45,8 @@ namespace Unity.Robotics.ROSTCPConnector
             messageSerializer.WriteUnaligned(json);
         }
 
-        public void SendTo([NotNull] Stream stream, MessageSerializer messageSerializer = null)
+        public void SendTo([NotNull] Stream stream, MessageSerializer messageSerializer)
         {
-            if (messageSerializer == null)
-            {
-                messageSerializer = new MessageSerializer();
-            }
-
             PopulateSysCommand(messageSerializer);
             messageSerializer.SendTo(stream);
         }

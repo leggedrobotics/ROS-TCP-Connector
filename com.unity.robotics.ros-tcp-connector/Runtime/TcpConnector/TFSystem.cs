@@ -72,7 +72,6 @@ public class TFSystem
                     tf_message.transform.rotation.From<FLU>()
                 );
                 NotifyChanged(tf);
-                Debug.Log("Received TF " + frame_id + " at time " + tf_message.header.stamp + " with translation " + tf_message.transform.translation.x + ", " + tf_message.transform.translation.y + ", " + tf_message.transform.translation.z);
             }
         }
 
